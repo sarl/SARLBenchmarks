@@ -1,0 +1,50 @@
+package io.sarl.scalability.tests
+
+import io.sarl.core.Destroy
+import io.sarl.core.Initialize
+import io.sarl.core.Lifecycle
+import io.sarl.core.Logging
+import io.sarl.core.Schedules
+import io.sarl.core.DefaultContextInteractions
+
+agent BootScalableAgent {
+	uses Logging, Lifecycle
+
+	on Initialize {
+		for(i:0..10000) {
+			info("Spawning agent "+i)
+			spawn(ScalableAgent,i)
+		}
+		
+		killMe
+	}
+
+
+}
+
+event Taskgo
+event Back
+
+agent ScalableAgent {
+	uses Logging, Schedules, DefaultContextInteractions
+	
+	on Initialize {
+		info("Initialize")
+		loggingName = occurrence.parameters.get(0) as String 
+		every(1000) [emit(new Taskgo)]
+	}
+	
+	on Taskgo {
+		emit (new Back)
+	}
+	
+	/*on Back {
+		info("Backed")
+	}*/
+
+	on Destroy {
+		info("The agent was stopped.")
+	}
+
+}
+
