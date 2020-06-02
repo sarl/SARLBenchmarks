@@ -11,6 +11,7 @@ agent BootScalableAgent {
 	uses Logging, Lifecycle
 
 	on Initialize {
+		loggingName = "BootAgent" 
 		for(i:0..10000) {
 			info("Spawning agent "+i)
 			spawn(ScalableAgent,i)
@@ -19,23 +20,28 @@ agent BootScalableAgent {
 		killMe
 	}
 
-
+	on Destroy {
+		info("Boot dead.")
+	}
 }
 
 event Taskgo
 event Back
 
 agent ScalableAgent {
-	uses Logging, Schedules, DefaultContextInteractions
+	uses Logging, Schedules, DefaultContextInteractions, Lifecycle
 	
 	on Initialize {
-		info("Initialize")
 		loggingName = occurrence.parameters.get(0) as String 
-		every(1000) [emit(new Taskgo)]
+		info("Initialize")
+		every(1000) [
+			emit(new Taskgo)
+		]
 	}
 	
 	on Taskgo {
 		emit (new Back)
+		killMe
 	}
 	
 	/*on Back {
